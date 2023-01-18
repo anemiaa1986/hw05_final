@@ -11,18 +11,18 @@ COP_MAIN_PAGE = 17
 
 
 def index(request):
-    context = get_page_pagi_func(
-        Post.objects.select_related('group').all(), request
-    )
+    post_list = Post.objects.select_related('group').all()
+    page_obj = get_page_pagi_func(request, post_list, COUNT_OF_POSTS)
+    context = {
+        'page_obj': page_obj,
+    }
     return render(request, 'posts/index.html', context)
 
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     posts = group.groups.all()
-    paginator = Paginator(posts, COUNT_OF_POSTS)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = get_page_pagi_func(request, posts, COUNT_OF_POSTS)
     context = {
         'group': group,
         'page_obj': page_obj,
@@ -33,9 +33,7 @@ def group_posts(request, slug):
 def profile(request, username):
     author = get_object_or_404(User, username=username)
     posts = author.posts.select_related('group')
-    paginator = Paginator(posts, COUNT_OF_POSTS)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = get_page_pagi_func(request, posts, COUNT_OF_POSTS)
     following = (request.user.is_authenticated and Follow.objects.filter(
         user=request.user,
         author=author).exists()
@@ -110,9 +108,7 @@ def add_comment(request, post_id):
 @login_required
 def follow_index(request):
     post_list = Post.objects.filter(author__following__user=request.user)
-    paginator = Paginator(post_list, COUNT_OF_POSTS)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = get_page_pagi_func(request, post_list, COUNT_OF_POSTS)
     context = {
         'page_obj': page_obj,
     }
