@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User
+from .utils import get_page_pagi_func
 from django.contrib.auth.decorators import login_required
 
 
@@ -10,22 +11,9 @@ COP_MAIN_PAGE = 17
 
 
 def index(request):
-    post_list = Post.objects.select_related('group').all()
-    # Если порядок сортировки определен в классе Meta модели,
-    # запрос будет выглядеть так:
-    # post_list = Post.objects.all()
-    # Показывать по 10 записей на странице.
-    paginator = Paginator(post_list, COUNT_OF_POSTS)
-
-    # Из URL извлекаем номер запрошенной страницы - это значение параметра page
-    page_number = request.GET.get('page')
-
-    # Получаем набор записей для страницы с запрошенным номером
-    page_obj = paginator.get_page(page_number)
-    # Отдаем в словаре контекста
-    context = {
-        'page_obj': page_obj,
-    }
+    context = get_page_pagi_func(
+        Post.objects.select_related('group').all(), request
+    )
     return render(request, 'posts/index.html', context)
 
 
