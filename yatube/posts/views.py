@@ -1,20 +1,21 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
+from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User
 from django.contrib.auth.decorators import login_required
-from .forms import CommentForm, PostForm
+
 
 COUNT_OF_POSTS = 10
 COP_MAIN_PAGE = 17
 
 
 def index(request):
-    post_list = Post.objects.all()
+    post_list = Post.objects.select_related('group').all()
     # Если порядок сортировки определен в классе Meta модели,
     # запрос будет выглядеть так:
     # post_list = Post.objects.all()
     # Показывать по 10 записей на странице.
-    paginator = Paginator(post_list, 10)
+    paginator = Paginator(post_list, COUNT_OF_POSTS)
 
     # Из URL извлекаем номер запрошенной страницы - это значение параметра page
     page_number = request.GET.get('page')
@@ -36,7 +37,6 @@ def group_posts(request, slug):
     page_obj = paginator.get_page(page_number)
     context = {
         'group': group,
-        'posts': posts,
         'page_obj': page_obj,
     }
     return render(request, 'posts/group_list.html', context)
@@ -54,7 +54,6 @@ def profile(request, username):
     )
     context = {
         'author': author,
-        'posts': posts,
         'page_obj': page_obj,
         'following': following,
     }
@@ -64,14 +63,10 @@ def profile(request, username):
 def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     form = CommentForm()
-    author = post.author
-    posts_author = User.objects.filter(posts__author=author).count()
     comments = post.comments.all()
     context = {
         'post_id': post_id,
         'post': post,
-        'author': author,
-        'posts_author': posts_author,
         'form': form,
         'comments': comments
     }
