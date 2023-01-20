@@ -1,11 +1,11 @@
 from django.core.paginator import Paginator
-from typing import Any
+from django.db.models import QuerySet
 
 
-def get_page_pagi_func(request, queryset, posts_on_page) -> Any:
+def get_page_pagi_func(request, objects, posts_on_page) -> QuerySet:
     """
     функция пагинации для views, вынесена в отдельный модуль
     """
-    paginator = Paginator(queryset, posts_on_page)
+    paginator = Paginator(objects, posts_on_page)
     page_number = request.GET.get('page')
     return paginator.get_page(page_number)
