@@ -7,7 +7,7 @@ def get_page_pagi_func(
     request: WSGIRequest,
     objects: QuerySet,
     posts_on_page: int
-        ) -> Page:
+) -> Page:
     """
     функция пагинации для views, вынесена в отдельный модуль
     """
